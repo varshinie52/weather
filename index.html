@@ -1,0 +1,153 @@
+ 
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Weather Information</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #74ebd5, #ACB6E5);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            width: 350px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            color: #2c3e50;
+        }
+
+        input {
+            width: 90%;
+            padding: 12px;
+            margin: 15px 0;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        button {
+            background: #3498db;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #217dbb;
+        }
+
+        #result {
+            margin-top: 20px;
+            color: #333;
+        }
+
+        #result h3 {
+            color: #3498db;
+        }
+
+        #result h4 {
+            background: #f1f8ff;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Weather Information</h1>
+
+        <input type="text" id="city" placeholder="Enter city name">
+
+        <br>
+
+        <button onclick="get()">Get Data</button>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+
+        function get(){
+
+            let place = document.getElementById("city").value;
+
+            if(place == ""){
+                alert("Enter a city name");
+                return;
+            }
+
+            fetch("https://geocoding-api.open-meteo.com/v1/search?name=" + place + "&count=5&language=en&format=json")
+
+            .then(response => response.json())
+
+            .then(data => {
+
+                if(!data.results || data.results.length == 0)
+                {
+                    document.getElementById("result").innerHTML = "City not found";
+                    return;
+                }
+
+                let longitude = data.results[0].longitude;
+                let latitude = data.results[0].latitude;
+
+                weather_details(longitude, latitude);
+
+            })
+
+            .catch(error => console.log(error));
+        }
+
+
+        function weather_details(lo, la)
+        {
+            fetch("https://api.open-meteo.com/v1/forecast?latitude=" + la + "&longitude=" + lo + "&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code")
+
+            .then(response => response.json())
+
+            .then(data =>
+            {
+                console.log(data);
+
+                document.getElementById("result").innerHTML =
+
+                `<div>
+                    <h3>Current Weather</h3>
+
+                    <h4>Temperature: ${data.current.temperature_2m} °C</h4>
+
+                    <h4>Humidity: ${data.current.relative_humidity_2m} %</h4>
+
+                    <h4>Feels Like: ${data.current.apparent_temperature} °C</h4>
+
+                    <h4>Weather Code: ${data.current.weather_code}</h4>
+                </div>`;
+
+            })
+
+            .catch(error => console.log(error));
+
+        }
+
+    </script>
+
+</body>
+</html>
